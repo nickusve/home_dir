@@ -29,8 +29,6 @@ if [[ $TMUX_PANE ]]; then
 
     else
       export TMUX_HIST_ID=$(cat ~/.tmux/.restore_in_progress)
-      history -c
-      history -r $TMUX_HIST_DIR/$TMUX_HIST_ID
       echo "Restored, using history ID $TMUX_HIST_ID"
     fi
     # Set history file and update map 
