@@ -12,11 +12,12 @@ usage() {
     return 1
 }
 
-list="false"
 while getopts ":lh" flag; do
     case "${flag}" in
         l) # List options
-            list="true"
+            echo "Available history files:"
+            ls $HOME/.tmux/history
+            return 1
             ;;
         h) # Option -h for help
             usage
@@ -31,12 +32,6 @@ while getopts ":lh" flag; do
 done
 
 shift $((OPTIND - 1))
-
-if [[ "$list" == "true" ]]; then
-    echo "Available history files:"
-    ls $HOME/.tmux/history
-    return 1
-fi
 
 if [ -z "$1" ]; then
     echo "Error: History name is required."
