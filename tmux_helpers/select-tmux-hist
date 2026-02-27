@@ -12,6 +12,7 @@ usage() {
     return 1
 }
 
+OPTIND=1
 while getopts ":lh" flag; do
     case "${flag}" in
         l) # List options

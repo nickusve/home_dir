@@ -10,7 +10,8 @@ usage() {
     return 1
 }
 
-list="false"
+OPTIND=1
+force="false"
 while getopts ":fh" flag; do
     case "${flag}" in
         f) # Force rename if already exists
