@@ -109,7 +109,7 @@ mkdir -p bin lib
 install_tmux
 apply_nick_config
 
-tmux kill-server
+~/bin/tmux kill-server
 
 # Create a session to cause plugins to install
 ~/bin/tmux new-session -d -s init
