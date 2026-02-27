@@ -2,7 +2,7 @@
 
 if [[ ! $TMUX_PANE ]]; then
     echo "This script is meant to be run inside a tmux pane. Exiting."
-    exit 1
+    return 1
 fi
 
 usage() {
