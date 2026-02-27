@@ -151,7 +151,7 @@ cp $home_dir_path/ssh-agent.service ~/.config/systemd/user/
 systemctl --user enable ssh-agent
 systemctl --user start ssh-agent
 
-cat $home_dir_path/.nick.bashrc >> ~/.bashrc
+cat $home_dir_path/.nick_bashrc >> ~/.bashrc
 cp $home_dir_path/.nick_alias ~/
 
 cp -r $home_dir_path/tmux_helpers ~/
