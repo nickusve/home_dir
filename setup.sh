@@ -102,6 +102,10 @@ apply_nick_config() {
 }
 
 cd
+
+# Add bin and lib dirs in home for local programs and libraries
+mkdir -p bin lib
+
 install_tmux
 apply_nick_config
 
@@ -150,8 +154,6 @@ systemctl --user start ssh-agent
 cat $home_dir_path/.nick.bashrc >> ~/.bashrc
 cp $home_dir_path/.nick_alias ~/
 
-# Add bin and lib dirs in home for local programs and libraries
-mkdir -p bin lib
 cp -r $home_dir_path/tmux_helpers ~/
 
 rm -rf setup_tmp
