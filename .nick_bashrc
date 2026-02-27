@@ -44,3 +44,6 @@ if [[ $TMUX_PANE ]]; then
 else
   echo "Non-tmux shell, welcome!"
 fi
+
+alias rename-tmux-hist='. $HOME/tmux_helpers/rename-tmux-hist'
+alias select-tmux-hist='. $HOME/tmux_helpers/select-tmux-hist'
