@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [[ ! $TMUX_PANE ]]; then
+    echo "This script is meant to be run inside a tmux pane. Exiting."
+    exit 1
+fi
+
+usage() {
+    echo "Loads and uses an existing tmux history file."
+    echo "Can cause undesired effects if used by multiple panes"
+    echo "Usage: $0 [-f] <History name>"
+    exit 1
+}
+
+list="false"
+while getopts ":lh" flag; do
+    case "${flag}" in
+        l) # List options
+            list="true"
+            ;;
+        h) # Option -h for help
+            usage
+            ;;
+        \?) # Handle invalid options
+            echo "Invalid option: -${OPTARG}" >&2
+            usage >&2
+            ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+if [[ "$list" == "true" ]]; then
+    echo "Available history files:"
+    ls $HOME/.tmux/history
+    exit 0
+fi
+
+if [ -z "$1" ]; then
+    echo "Error: History name is required."
+    usage
+fi
+
+history_file_name=$1
+history_file="$HOME/.tmux/history/$history_file_name"
+
+# Make sure exists
+if [[ ! -f "$history_file" ]]; then
+    echo "Error: History file '$history_file_name' does not exist."
+    exit 1
+fi
+
+# Save off current history
+history -a
+
+# Update the ID and mapping and then swap hist file
+export TMUX_HIST_ID=$history_file_name
+echo $new_hist_file > "$HOME/.tmux/history/map/$TMUX_PANE"
+export HISTFILE="$history_file"
+
+# Load history, save updates in tmux
+history -r
+$HOME/.tmux/plugins/tmux-resurrect/scripts/save.sh

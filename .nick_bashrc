@@ -1,0 +1,48 @@
+export TMUX_HIST_DIR=$HOME/.tmux/history
+
+# Add ~/bin to PATH so local programs can be run
+# Many distros do this by default so this may be redundant, but not harmful
+export PATH=$HOME/bin:$PATH
+
+# Add ~/lib to LD_LIBRARY_PATH so local libraries can be used
+export LD_LIBRARY_PATH=$HOME/lib:$LD_LIBRARY_PATH
+
+# Source .nick_alias if it exists
+if [ -f $HOME/.nick_alias ]; then
+  . $HOME/.nick_alias
+fi
+
+# For SSH agent startup via user service
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+if [[ $TMUX_PANE ]]; then
+  if [[ $TMUX_PANE == "%0" ]]; then
+    # This is the first pane opened for a restore and it will be removed
+    echo "Warning: This is the first pane. If a restore is started this will be removed."
+    echo "History for this pane is not being tracked. Create a new one to track history."
+  else
+    if [ ! -f ~/.tmux/.restore_in_progress ]; then
+      echo "New tmux pane created. Using random history ID."
+      echo "Run 'rename-tmux-hist' to rename"
+      echo "Run 'select-tmux-hist' to load an existing history file"
+      export TMUX_HIST_ID=$(uuidgen)
+
+    else
+      export TMUX_HIST_ID=$(cat ~/.tmux/.restore_in_progress)
+      history -c
+      history -r $TMUX_HIST_DIR/$TMUX_HIST_ID
+      echo "Restored, using history ID $TMUX_HIST_ID"
+    fi
+    # Set history file and update map 
+    export HISTFILE=$TMUX_HIST_DIR/$TMUX_HIST_ID
+    mkdir -p $TMUX_HIST_DIR/map
+    echo $TMUX_HIST_ID > $TMUX_HIST_DIR/map/$TMUX_PANE
+    
+    shopt -s histappend
+    PROMPT_COMMAND='history -a'
+    
+    export XAUTHORITY=$HOME/.Xauthority
+  fi
+else
+  echo "Non-tmux shell, welcome!"
+fi

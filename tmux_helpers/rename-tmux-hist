@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if [[ ! $TMUX_PANE ]]; then
+    echo "This script is meant to be run inside a tmux pane. Exiting."
+    exit 1
+fi
+
+usage() {
+    echo "Usage: $0 [-f] <History name>"
+    exit 1
+}
+
+list="false"
+while getopts ":fh" flag; do
+    case "${flag}" in
+        f) # Force rename if already exists
+            force="true"
+            ;;
+        h) # Option -h for help
+            usage
+            ;;
+        \?) # Handle invalid options
+            echo "Invalid option: -${OPTARG}" >&2
+            usage >&2
+            ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+if [ -z "$1" ]; then
+    echo "Error: History name is required."
+    usage
+fi
+
+# For readability
+new_hist_file=$1
+new_hist_file_path="$HOME/.tmux/history/$new_hist_file"
+current_hist_file="$HOME/.tmux/history/$TMUX_HIST_ID"
+
+# Validate force flag if new name already exists
+if [[ -f "$new_hist_file_path" ]] && [[ "$force" != "true" ]] ; then
+    echo "Error: History file '$new_hist_file' already exists. Use -f to force rename."
+    exit 1
+fi
+
+# Save history and move file
+history -a
+mv "$current_hist_file" "$new_hist_file_path"
+
+# Update tmux variables and mapping
+export TMUX_HIST_ID=$new_hist_file
+export HISTFILE="$new_hist_file_path"
+echo $new_hist_file > "$HOME/.tmux/history/map/$TMUX_PANE"
+
+# Save updates in tmux
+$HOME/.tmux/plugins/tmux-resurrect/scripts/save.sh
