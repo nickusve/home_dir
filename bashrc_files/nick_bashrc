@@ -22,3 +22,6 @@ fi
 
 # For SSH agent startup via user service
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+# For X11 forwarding over SSH
+export XAUTHORITY=$HOME/.Xauthority

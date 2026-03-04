@@ -1,17 +1,16 @@
 # .bashrc
 
-# Check if this has already been sourced to prevent duplicating operations
-if [ ! -z "$tmux_bashrc_loaded" ]; then
-    return 0
-fi
-
-# To used to mark this being loaded, checked above
-export tmux_bashrc_loaded="true"
-
 # Anything involving HOME/.tmux/history, $HOME/.tmux/.restore_in_progress depend on
 # modifications to the base restore plugin that are captured in
 # the fork here https://github.com/nickusve/tmux-resurrect
 if [[ $TMUX_PANE ]]; then
+
+  # Check if pane already has a history ID, which means this has already been sourced.
+  # If so, return here since the pane is already set up.
+  if [ ! -z "$TMUX_HIST_ID" ]; then
+      return 0
+  fi
+
   export TMUX_HIST_DIR=$HOME/.tmux/history
   alias rename-tmux-hist='. $HOME/.tmux/helpers/rename-tmux-hist'
   alias select-tmux-hist='. $HOME/.tmux/helpers/select-tmux-hist'
@@ -37,8 +36,6 @@ if [[ $TMUX_PANE ]]; then
     
     shopt -s histappend
     PROMPT_COMMAND='history -a'
-    
-    export XAUTHORITY=$HOME/.Xauthority
   fi
 else
   echo "Non-tmux shell, welcome!"
