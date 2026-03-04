@@ -154,9 +154,11 @@ systemctl --user enable ssh-agent
 systemctl --user start ssh-agent
 
 mkdir -p $HOME/.bashrc.d
-cp $home_dir_path/.nick_bashrc $HOME/.bashrc.d/nick_bashrc
+cp $home_dir_path/bashrc_files/* $HOME/.bashrc.d/
+
 cp $home_dir_path/.nick_alias $HOME
 
-cp -r $home_dir_path/tmux_helpers ~/
+mkdir -p $HOME/.tmux/helpers
+cp $home_dir_path/tmux_helpers/* $HOME/.tmux/helpers/
 
-rm -rf setup_tmp
+rm -rf $home_dir_path
