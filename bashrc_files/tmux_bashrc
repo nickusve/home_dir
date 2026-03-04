@@ -1,0 +1,45 @@
+# .bashrc
+
+# Check if this has already been sourced to prevent duplicating operations
+if [ ! -z "$tmux_bashrc_loaded" ]; then
+    return 0
+fi
+
+# To used to mark this being loaded, checked above
+export tmux_bashrc_loaded="true"
+
+# Anything involving HOME/.tmux/history, $HOME/.tmux/.restore_in_progress depend on
+# modifications to the base restore plugin that are captured in
+# the fork here https://github.com/nickusve/tmux-resurrect
+if [[ $TMUX_PANE ]]; then
+  export TMUX_HIST_DIR=$HOME/.tmux/history
+  alias rename-tmux-hist='. $HOME/.tmux/helpers/rename-tmux-hist'
+  alias select-tmux-hist='. $HOME/.tmux/helpers/select-tmux-hist'
+
+  if [[ $TMUX_PANE == "%0" ]]; then
+    # This is the first pane opened for a restore and it will be removed
+    echo "Warning: This is the first pane. If a restore is started this will be removed."
+    echo "History for this pane is not being tracked. Create a new one to track history."
+  else
+    if [ ! -f $HOME/.tmux/.restore_in_progress ]; then
+      echo "New tmux pane created. Using random history ID."
+      echo "Run 'rename-tmux-hist' to rename"
+      echo "Run 'select-tmux-hist' to load an existing history file"
+      export TMUX_HIST_ID=$(uuidgen)
+    else
+      export TMUX_HIST_ID=$(cat $HOME/.tmux/.restore_in_progress)
+      echo "Restored, using history ID $TMUX_HIST_ID"
+    fi
+    # Set history file and update map 
+    export HISTFILE=$TMUX_HIST_DIR/$TMUX_HIST_ID
+    mkdir -p $TMUX_HIST_DIR/map
+    echo $TMUX_HIST_ID > $TMUX_HIST_DIR/map/$TMUX_PANE
+    
+    shopt -s histappend
+    PROMPT_COMMAND='history -a'
+    
+    export XAUTHORITY=$HOME/.Xauthority
+  fi
+else
+  echo "Non-tmux shell, welcome!"
+fi
