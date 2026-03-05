@@ -1,5 +1,8 @@
 # .bashrc
 
+# Return if running in a non-interactively, as tmux will not be used
+[[ $- == *i* ]] || return
+
 # Anything involving HOME/.tmux/history, $HOME/.tmux/.restore_in_progress depend on
 # modifications to the base restore plugin that are captured in
 # the fork here https://github.com/nickusve/tmux-resurrect
