@@ -2,28 +2,28 @@
 
 update_config() {
   if [ "$#" -ne 3 ]; then
-      echo "update_config requires 3 arguments"
-      return 1
+    echo "update_config requires 3 arguments"
+    return 1
   fi
   sed -i "s;$2=.*;$2=$3;" $1
 }
 
 uncomment_config() {
   if [ "$#" -ne 3 ]; then
-      echo "uncomment_config requires 3 arguments"
-      return 1
+    echo "uncomment_config requires 3 arguments"
+    return 1
   fi
   sed -i "s;#$2.*;$2 $3;" $1
 }
 
 enable_plugin() {
   if [ "$#" -eq 2 ]; then
-      plugin_name=$2
+    plugin_name=$2
   elif [ "$#" -eq 3 ]; then
-      plugin_name=$3
+    plugin_name=$3
   else
-      echo "enable_plugin requires 2 or 3 arguments"
-      return 1
+    echo "enable_plugin requires 2 or 3 arguments"
+    return 1
   fi
   sed -i "s;#set -g @plugin '$2';set -g @plugin '$plugin_name';" $1
 }
@@ -39,9 +39,9 @@ install_tmux() {
   cd
   wget -q ${TMUX_DL_LOCATION}${TMUX_TAG}/${TMUX_FILE}
   if echo "${TMUX_SHA256}  ${TMUX_FILE}" | sha256sum -c; then
-    tar -xzf ${TMUX_FILE} -C bin
+    tar -xzf ${TMUX_FILE} -C $HOME/.local/bin
     echo "Tmux release downloaded successfully, verifying binary"
-    if bin/tmux -V; then
+    if $HOME/.local/bin/tmux -V; then
       echo "Binary ran successfully"
       install_oh_my_tmux
     fi
@@ -101,18 +101,67 @@ apply_nick_config() {
   awk '1; /# -- user customizations ---.*/{print "\n# Custom keybinds\nbind -n S-Left  previous-window\nbind -n S-Right next-window\nbind -n C-S-Left swap-window -d -t -1\nbind n C-S-Right swap-window -d -t +1"}' .tmux.conf.local > .tmux.conf.local.tmp && mv .tmux.conf.local.tmp .tmux.conf.local
 }
 
+bashrc_setup() {
+
+  if [[ "$ADD_PATH_STUB" == "true" ]]; then
+    cat $home_dir_path/bashrc_local_dirs_stub >> $HOME/.bashrc
+    echo "Current .bashrc does not include ~/.local/bin to PATH, updating it to do so"
+  fi
+
+  # Ensure $HOME/.bashrc.d exists
+  mkdir -p $HOME/.bashrc.d
+
+  # Copy test file, unset test var, and source .bashrc
+  # If the test env var is set it means the current .bashrc file will
+  # source files in $HOME/.bashrc.d
+  cp $home_dir_path/test_bashrc $HOME/.bashrc.d/
+  unset TEST_BASHRC_D_IS_SOURCED
+  . $HOME/.bashrc
+
+  # If the test cariable is not set add the bashrc.d stub to .bashrc 
+  if [ -z "$TEST_BASHRC_D_IS_SOURCED" ]; then
+    cat $home_dir_path/bashrc_d_stub >> $HOME/.bashrc
+    echo "Current ~/.bashrc does not source files in ~/.bashrc.d, updating it to do so"
+  fi
+
+  # After the above files in .bashrc.d should be sourced. Re-test.
+  unset TEST_BASHRC_D_IS_SOURCED
+  . $HOME/.bashrc
+
+  # If the test cariable is not set add the bashrc.d stub to .bashrc 
+  if [ -z "$TEST_BASHRC_D_IS_SOURCED" ]; then
+    echo "Error: .bashrc is not sourcing files in .bashrc.d, tmux will not work as expected."
+  fi
+
+  rm $HOME/.bashrc.d/test_bashrc
+  cp $home_dir_path/bashrc_files/* $HOME/.bashrc.d/
+}
+
 cd
 
 # Add bin and lib dirs in home for local programs and libraries
-mkdir -p bin lib
+mkdir -p $HOME/.local/bin $HOME/.local/lib
 
 install_tmux
 apply_nick_config
 
-~/bin/tmux kill-server
+# A system-installed tmux may not be compatible with plugins/tpm so the local one is used
+# out of $HOME/.local/bin. First check if it's in the path after re-sourcing .bashrc.
+. $HOME/.bashrc
+
+# Track if .bashrc needs to be updated to put the dir in the PATH. Temporarily
+# adding it to $PATH for now if it does need to be updated.
+ADD_PATH_STUB="false"
+if ! [[ "$PATH" =~ "$HOME/.local/bin:" ]]; then
+  echo "Current .bashrc does not include ~/.local/bin to PATH, this will be changed later"
+  ADD_PATH_STUB="true"
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+tmux kill-server
 
 # Create a session to cause plugins to install
-~/bin/tmux new-session -d -s init
+tmux new-session -d -s init
 
 # Wait for it to finish
 timeout=15
@@ -137,7 +186,7 @@ while : ; do
 done
 
 echo "Killing init tmux session"
-~/bin/tmux kill-session -t init
+tmux kill-session -t init
 
 echo "Cloning home dir repo to finish setup"
 cd
@@ -153,8 +202,7 @@ cp $home_dir_path/ssh-agent.service ~/.config/systemd/user/
 systemctl --user enable ssh-agent
 systemctl --user start ssh-agent
 
-mkdir -p $HOME/.bashrc.d
-cp $home_dir_path/bashrc_files/* $HOME/.bashrc.d/
+bashrc_setup
 
 cp $home_dir_path/.nick_alias $HOME
 
