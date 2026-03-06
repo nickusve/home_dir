@@ -1,0 +1,4 @@
+# .bashrc
+
+# Test env var to check if .bashrc.d files are being sourced
+export TEST_BASHRC_D_IS_SOURCED="true"
