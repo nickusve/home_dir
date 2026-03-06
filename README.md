@@ -4,4 +4,4 @@ This repo contains various configurations, alises, etc that I use. The setup scr
 ## Setup
 Either clone the repo and run the script, or use the setup script directly
 
-curl -sSL https://raw.githubusercontent.com/nickusve/home_dir/refs/heads/main/setup.sh | bash
+. <(curl -sSL https://raw.githubusercontent.com/nickusve/home_dir/refs/heads/main/setup.sh)
