@@ -8,12 +8,15 @@ fi
 # To used to mark this being loaded, checked above
 export nick_bashrc_loaded="true"
 
-# Add ~/bin to PATH so local programs can be run
-# Many distros do this by default so this may be redundant, but not harmful
-export PATH=$HOME/bin:$PATH
+# Add $HOME/.local/bin to PATH if not already present.
+if ! [[ "$PATH" =~ "$HOME/.local/bin:" ]]; then
+  PATH="$HOME/.local/bin:$PATH"
+fi
 
-# Add ~/lib to LD_LIBRARY_PATH so local libraries can be used
-export LD_LIBRARY_PATH=$HOME/lib:$LD_LIBRARY_PATH
+# Add ~/.local/lib to LD_LIBRARY_PATH so local libraries can be used
+if ! [[ "$LD_LIBRARY_PATH" =~ "$HOME/.local/lib:" ]]; then
+  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
+fi
 
 # Source .nick_alias if it exists
 if [ -f $HOME/.nick_alias ]; then
