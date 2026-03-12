@@ -75,7 +75,7 @@ install_oh_my_tmux() {
 
   echo "Cloning base configuration"
   mkdir -p .tmux/config
-  git clone -q --single-branch https://github.com/gpakosz/.tmux.git .tmux/config
+  git clone -q --single-branch https://github.com/nickusve/.tmux.git .tmux/config
 
   echo "Creating symlink to main config and copying base local config"
   ln -s -f .tmux/config/.tmux.conf
